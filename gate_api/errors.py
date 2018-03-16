@@ -9,5 +9,4 @@ class GatewayNotLoginError(GatewayApiError):
         super().__init__("You are not logged in.")
 
 class GatewayAlreadyLoginError(GatewayApiError):
-    def __init__(self):
-        super().__init__("You have already logged in.")
+    pass

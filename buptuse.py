@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 import sys
-from gate_api import gate_api
-import parse_input
 import time
 import humanfriendly
+from tqdm import tqdm
 from pathlib import Path
+
+import parse_input
+from utils import diff_last
+from gate_api import gate_api
 from gate_api.errors import GatewayNotLoginError
 
 LIMIT_DEFAULT = '50M'
@@ -23,11 +26,24 @@ r"""
 """
 
 
-def wait_until_usage(usage):
-    while True:
-        if gate_api.data_usage() >= usage:
-            break
-        time.sleep(SLEEP_DURATION)
+def wait_limit_with_progress(init_usage, limit_usage):
+    """
+    Param `init_usage` is set for progress bar.
+    """
+
+    BAR_FORMAT = r'{percentage:.0f}% | {bar} | {n_fmt} KB / {total_fmt} KB'
+
+    with tqdm(total=limit_usage,
+              bar_format=BAR_FORMAT) as pbar:
+        d = diff_last(init_usage)
+        d.send(None)
+
+        while True:
+            usage = gate_api.data_usage()
+            pbar.update(d.send(usage))
+            if usage >= init_usage + limit_usage:
+                break
+            time.sleep(SLEEP_DURATION)
 
 
 def main():
@@ -57,23 +73,22 @@ def main():
     print("Sign-in until {} of data used.\n".format(input_limit))
     print("Attempt to sign in...")
     gate_api.sign_in(uname, pwd)
-    print("Sign-in succeed.")
+    print("Sign-in succeed.\n")
 
+    # Prepare for new usage target.
     init_usage = gate_api.data_usage()
 
-    limit_exceed = False
     try:
-        wait_until_usage(init_usage + usage_limit)
-        limit_exceed = True
+        wait_limit_with_progress(init_usage, usage_limit)
     except KeyboardInterrupt:
         print("Ctrl+C detected.")
     except GatewayNotLoginError:
-        print("Signed out by user or other applications.")
+        print("Signed out by user or other applications.\n")
+        return
 
     total_usage = gate_api.sign_out() - init_usage
     if total_usage > usage_limit:
         print("{} limit exceeded.".format(input_limit))
-
     print("\nTotal usage: %s."
           % humanfriendly.format_size(total_usage * 1024, binary=True))
 

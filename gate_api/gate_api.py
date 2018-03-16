@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import requests
-from .errors import *
+from gate_api.errors import *
 
 login_url = 'http://10.3.8.211'
 logout_url = 'http://10.3.8.211/F.htm'
