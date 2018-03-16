@@ -22,11 +22,13 @@ r"""
     or [SystemDisk]:\Users\[UserName]\.buptuse\config.json (Windows).
 """
 
+
 def wait_until_usage(usage):
     while True:
         if gate_api.data_usage() >= usage:
             break
         time.sleep(SLEEP_DURATION)
+
 
 def main():
     # Print usage
@@ -45,14 +47,14 @@ def main():
         uname, pwd = parse_input.get_stored_account(CONFIG_ADDR)
     except FileNotFoundError:
         print("Config file not found.\n"
-            "Double-check document to fix the problem.")
+              "Double-check document to fix the problem.")
         return
     except ValueError:
         print("There is error in config file.\n"
               "Double-check document to fix the problem.")
         return
 
-    print("Signin until {} of data used.\n".format(input_limit))
+    print("Sign-in until {} of data used.\n".format(input_limit))
     print("Attempt to sign in...")
     gate_api.sign_in(uname, pwd)
     print("Sign-in succeed.")
@@ -71,9 +73,9 @@ def main():
     total_usage = gate_api.sign_out() - init_usage
     if total_usage > usage_limit:
         print("{} limit exceeded.".format(input_limit))
-    
-    print("\nTotal usage: %s." \
-            % humanfriendly.format_size(total_usage * 1024, binary=True))
+
+    print("\nTotal usage: %s."
+          % humanfriendly.format_size(total_usage * 1024, binary=True))
 
 
 if __name__ == '__main__':
