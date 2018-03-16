@@ -5,6 +5,7 @@ import parse_input
 import time
 import humanfriendly
 from pathlib import Path
+from gate_api.errors import GatewayNotLoginError
 
 LIMIT_DEFAULT = '50M'
 CONFIG_ADDR = Path.home() / '.buptuse' / 'config.json'
@@ -58,12 +59,14 @@ def main():
 
     init_usage = gate_api.data_usage()
 
-    limit_exceed = True
+    limit_exceed = False
     try:
         wait_until_usage(init_usage + usage_limit)
+        limit_exceed = True
     except KeyboardInterrupt:
-        limit_exceed = False
         print("Ctrl+C detected.")
+    except GatewayNotLoginError:
+        print("Signed out by user or other applications.")
 
     total_usage = gate_api.sign_out() - init_usage
     if total_usage > usage_limit:
