@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import humanfriendly
 import sys
 import re

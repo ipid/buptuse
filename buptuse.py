@@ -33,17 +33,18 @@ def wait_limit_with_progress(init_usage, limit_usage):
 
     BAR_FORMAT = r'{percentage:.0f}% | {bar} | {n_fmt} KB / {total_fmt} KB'
 
-    with tqdm(total=limit_usage,
+    with tqdm(total=limit_usage, ncols=80, ascii=True,
               bar_format=BAR_FORMAT) as pbar:
         d = diff_last(init_usage)
         d.send(None)
+        usage = init_usage
 
         while True:
+            time.sleep(SLEEP_DURATION)
             usage = gate_api.data_usage()
             pbar.update(d.send(usage))
             if usage >= init_usage + limit_usage:
                 break
-            time.sleep(SLEEP_DURATION)
 
 
 def main():
